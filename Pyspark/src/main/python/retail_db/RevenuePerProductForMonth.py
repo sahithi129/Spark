@@ -5,10 +5,10 @@ try:
     from pyspark import SparkContext, SparkConf
 
     props = cp.RawConfigParser()
-    props.read("../../Resources/application.ini")
+    props.read("src/main/Resources/application.ini")
     # env = sys.argv[1]
-    conf1 = SparkConf().setMaster(props.get(sys.argv[5], 'executionMode')).setAppName("Revenue Per Month")
-    sc = SparkContext(conf=conf1)
+    conf = SparkConf().setMaster(props.get(sys.argv[5], 'executionMode')).setAppName("Revenue Per Month")
+    sc = SparkContext(conf=conf)
 # input dir, output base dir, local base dir, month, environment
     inputPath = sys.argv[1]
     outPath = sys.argv[2]
@@ -16,8 +16,9 @@ try:
 
     Path = sc._gateway.jvm.org.apache.hadoop.fs.Path
     FileSystem = sc._gateway.jvm.org.apache.hadoop.fs.FileSystem
-    Configuration = sc._gateway.jvm.org.apache.hadoop.fs.Configuration
-    fs = FileSystem.get((Configuration()))
+    Configuration = sc._gateway.jvm.org.apache.hadoop.conf.Configuration
+
+    fs = FileSystem.get(Configuration())
 
     if(fs.exists(Path(inputPath)) == False):
         print("Input path does not exists")
@@ -53,12 +54,10 @@ try:
             join(revenueByProductId). \
             map(lambda rec: rec[1][0] + "\t" + str(rec[1][1])). \
             saveAsTextFile(outPath)
-
         print("Successfully imported Spark Modules")
 
 except ImportError as e:
     print("can not import spark modules", e)
 
 sys.exit(1)
-
 
